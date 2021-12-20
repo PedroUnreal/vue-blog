@@ -36,10 +36,9 @@ export default {
 
   methods: {
     addPost() {
-      Api.createComment(this.newComment);
-      Api.getPosts().then((response) => {
-      this.$emit("emitPosts", response);
-    });
+      Api.createComment(this.newComment).then(
+          ()=> this.$parent.$parent.$emit("newCommentCreated")
+      );  
     },
   },
 };

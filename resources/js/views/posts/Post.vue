@@ -10,7 +10,7 @@
       <div v-for="comment in this.post.comments" :key="comment.id" >
           {{comment.name}}: "{{comment.text}}"
       </div>
-      <CreateComment v-on:emitPost="posts = $event" :post_id="post.id"/>
+      <CreateComment :post_id="post.id"/>
       </div>
     </div>
   </div>

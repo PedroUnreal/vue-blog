@@ -2,9 +2,9 @@
   <div>
     <div class="alert alert-info">
       <p class="lead">Вот тут мы хотим увидеть список всех постов!</p>
-      <CreatePost v-on:emitPosts="posts=$event"/>
+      <CreatePost />
       <div v-for="post in posts" :key="post.id">
-        <Post v-on:emitPosts="posts=$event" :post="post" :showComments="false" />
+        <Post :post="post" :showComments="false" />
         <router-link :to="{ name: 'Post', params: { id: post.id } }">
           Читать комментарии
         </router-link>
@@ -31,10 +31,18 @@ export default {
     };
   },
   mounted() {
-    Api.getPosts().then((response) => {
-      this.posts = response;
-    });
+    this.getPosts();
+    this.$on('newPostCreated', () => {
+      this.getPosts()
+    })
   },
+  methods: {
+    getPosts() {
+      Api.getPosts().then((response) => {
+        this.posts = response;
+      });
+    }
+  }
 };
 </script>
 

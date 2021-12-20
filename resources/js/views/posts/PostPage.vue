@@ -28,7 +28,10 @@ export default {
     },
   },
   mounted() {
-    Api.getPost(this.$route.params.id).then(response=> this.post = response)
+    Api.getPost(this.$route.params.id).then(response=> this.post = response);
+    this.$on('newCommentCreated', () => {
+      Api.getPost(this.$route.params.id).then(response=> this.post = response)
+         })
     },
     // axios
     //   .post("/post", { id: this.$route.params.id })

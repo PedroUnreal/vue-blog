@@ -2169,9 +2169,8 @@ __webpack_require__.r(__webpack_exports__);
     addPost: function addPost() {
       var _this = this;
 
-      _api__WEBPACK_IMPORTED_MODULE_0__.Api.createComment(this.newComment);
-      _api__WEBPACK_IMPORTED_MODULE_0__.Api.getPosts().then(function (response) {
-        _this.$emit("emitPosts", response);
+      _api__WEBPACK_IMPORTED_MODULE_0__.Api.createComment(this.newComment).then(function () {
+        return _this.$parent.$parent.$emit("newCommentCreated");
       });
     }
   }
@@ -2228,9 +2227,7 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       _api__WEBPACK_IMPORTED_MODULE_0__.Api.createPost(this.newPost).then(function () {
-        _api__WEBPACK_IMPORTED_MODULE_0__.Api.getPosts().then(function (response) {
-          _this.$emit("emitPosts", response);
-        });
+        _this.$parent.$emit("newPostCreated");
       });
     }
   }
@@ -2384,6 +2381,11 @@ __webpack_require__.r(__webpack_exports__);
     _api__WEBPACK_IMPORTED_MODULE_2__.Api.getPost(this.$route.params.id).then(function (response) {
       return _this.post = response;
     });
+    this.$on('newCommentCreated', function () {
+      _api__WEBPACK_IMPORTED_MODULE_2__.Api.getPost(_this.$route.params.id).then(function (response) {
+        return _this.post = response;
+      });
+    });
   } // axios
   //   .post("/post", { id: this.$route.params.id })
   //   .then((response) => response.data)
@@ -2443,9 +2445,19 @@ __webpack_require__.r(__webpack_exports__);
   mounted: function mounted() {
     var _this = this;
 
-    _api__WEBPACK_IMPORTED_MODULE_0__.Api.getPosts().then(function (response) {
-      _this.posts = response;
+    this.getPosts();
+    this.$on('newPostCreated', function () {
+      _this.getPosts();
     });
+  },
+  methods: {
+    getPosts: function getPosts() {
+      var _this2 = this;
+
+      _api__WEBPACK_IMPORTED_MODULE_0__.Api.getPosts().then(function (response) {
+        _this2.posts = response;
+      });
+    }
   }
 });
 
@@ -2517,9 +2529,6 @@ function unwrapError(error) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "eventBus": () => (/* binding */ eventBus)
-/* harmony export */ });
 /* harmony import */ var vue_router__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vue-router */ "./node_modules/vue-router/dist/vue-router.esm.js");
 /* harmony import */ var _views_App__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./views/App */ "./resources/js/views/App.vue");
 /* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./router */ "./resources/js/router.js");
@@ -2551,7 +2560,6 @@ Vue.use(vue_router__WEBPACK_IMPORTED_MODULE_2__["default"]);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-var eventBus = new Vue();
 var router = new vue_router__WEBPACK_IMPORTED_MODULE_2__["default"](_router__WEBPACK_IMPORTED_MODULE_1__["default"]);
 var app = new Vue({
   el: '#app',
@@ -38866,14 +38874,7 @@ var render = function () {
                 ])
               }),
               _vm._v(" "),
-              _c("CreateComment", {
-                attrs: { post_id: _vm.post.id },
-                on: {
-                  emitPost: function ($event) {
-                    _vm.posts = $event
-                  },
-                },
-              }),
+              _c("CreateComment", { attrs: { post_id: _vm.post.id } }),
             ],
             2
           )
@@ -38942,27 +38943,14 @@ var render = function () {
           _vm._v("Вот тут мы хотим увидеть список всех постов!"),
         ]),
         _vm._v(" "),
-        _c("CreatePost", {
-          on: {
-            emitPosts: function ($event) {
-              _vm.posts = $event
-            },
-          },
-        }),
+        _c("CreatePost"),
         _vm._v(" "),
         _vm._l(_vm.posts, function (post) {
           return _c(
             "div",
             { key: post.id },
             [
-              _c("Post", {
-                attrs: { post: post, showComments: false },
-                on: {
-                  emitPosts: function ($event) {
-                    _vm.posts = $event
-                  },
-                },
-              }),
+              _c("Post", { attrs: { post: post, showComments: false } }),
               _vm._v(" "),
               _c(
                 "router-link",
