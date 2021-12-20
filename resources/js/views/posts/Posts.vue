@@ -1,19 +1,42 @@
 <template>
-    <div>
-        <div class="alert alert-info">
-            <p class="lead">
-                Вот тут мы хотим увидеть список всех постов!
-            </p>
-        </div>
+  <div>
+    <div class="alert alert-info">
+      <p class="lead">Вот тут мы хотим увидеть список всех постов!</p>
+      <CreatePost />
+      <div v-for="post in posts" :key="post.id">
+        <Post :post="post" :showComments="false" />
+        <router-link :to="{ name: 'Post', params: { id: post.id } }">
+          Открыть
+        </router-link>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
+import { Api } from "../../api";
+
+import Post from "./Post.vue";
+import CreatePost from "./CreatePost.vue";
+
 export default {
-    name: "Posts",
-}
+  name: "Posts",
+  components: {
+    Post,
+    CreatePost,
+  },
+  data() {
+    return {
+      posts: [],
+    };
+  },
+  mounted() {
+    Api.getPosts().then((response) => {
+      this.posts = response;
+    });
+  },
+};
 </script>
 
 <style scoped>
-
 </style>

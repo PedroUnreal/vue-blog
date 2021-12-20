@@ -2,7 +2,7 @@
   <div>
       <div class="alert alert-info">
           <p class="lead">
-              Удачи в тестовом задании!
+              Удачи в тестовом задании!!!
           </p>
       </div>
   </div>

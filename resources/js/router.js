@@ -1,6 +1,6 @@
 import Welcome from "./views/Welcome";
 import Posts from "./views/posts/Posts";
-import Post from "./views/posts/Post";
+import PostPage from "./views/posts/PostPage";
 
 export default {
     mode: 'history',
@@ -21,7 +21,7 @@ export default {
             name: "Post",
             path: '/posts/:id/show',
             props: true,
-            component: Post,
+            component: PostPage,
         }
     ]
 }
