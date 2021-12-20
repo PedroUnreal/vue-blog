@@ -35,6 +35,7 @@ Vue.use(VueRouter);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+export const eventBus = new Vue()
 const router = new VueRouter(routers)
 const app = new Vue({
     el: '#app',

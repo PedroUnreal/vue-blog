@@ -33,6 +33,9 @@ export const Api = {
     deletePost: (id) => {
         return axios.post(endpoints.deletePost, { id })
     },
+    createComment: (newComment) => {
+        return axios.post(endpoints.createComment,  newComment)
+    },
 }
 
 function unwrapResponse(response) {

@@ -2,11 +2,11 @@
   <div>
     <div class="alert alert-info">
       <p class="lead">Вот тут мы хотим увидеть список всех постов!</p>
-      <CreatePost />
+      <CreatePost v-on:emitPosts="posts=$event"/>
       <div v-for="post in posts" :key="post.id">
-        <Post :post="post" :showComments="false" />
+        <Post v-on:emitPosts="posts=$event" :post="post" :showComments="false" />
         <router-link :to="{ name: 'Post', params: { id: post.id } }">
-          Открыть
+          Читать комментарии
         </router-link>
       </div>
     </div>

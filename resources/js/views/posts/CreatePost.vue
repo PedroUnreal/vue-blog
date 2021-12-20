@@ -36,9 +36,10 @@ export default {
 
   methods: {
     addPost() {
-      Api.createPost(this.newPost);
-      Api.getPosts().then((response) => {
-      this.posts = response;
+      Api.createPost(this.newPost).then(() => {
+        Api.getPosts().then((response) => {
+            this.$emit("emitPosts", response);
+        });
     });
     },
   },
