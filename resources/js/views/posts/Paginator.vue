@@ -8,8 +8,8 @@
       {{ number + 1 }}
     </span>
 
-    <span class="control" v-on:click="setCurrentPage(currentPage < totalPages ? currentPage + 1 : currentPage)">&nbsp;>&nbsp;</span>
-    <span class="control" v-on:click="setCurrentPage(totalPages)"> >> </span>
+    <span class="control" v-on:click="setCurrentPage(currentPage < totalPages-1 ? currentPage + 1 : currentPage)">&nbsp;>&nbsp;</span>
+    <span class="control" v-on:click="setCurrentPage(totalPages-1)"> >> </span>
   </div>
 </template>
 
@@ -45,11 +45,11 @@ export default {
 
       if (this.currentPage >= this.totalPages - 2) {
         return [
+          this.totalPages - 5,
           this.totalPages - 4,
           this.totalPages - 3,
           this.totalPages - 2,
           this.totalPages - 1,
-          this.totalPages,
         ];
       }
 

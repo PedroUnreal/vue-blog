@@ -17,7 +17,6 @@ export default {
         Api.getPosts().then((response) => {
       this.$emit("posts", response);
     })
-      // axios.post("/api/posts/delete", { id: this.id })
     },
   },
 };

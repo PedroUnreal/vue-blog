@@ -2176,7 +2176,27 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
+
+
+var initialCommentData = function initialCommentData(postId) {
+  return {
+    name: "",
+    text: "",
+    post_id: postId
+  };
+};
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "CreateComment",
@@ -2185,42 +2205,23 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      name: "",
-      text: "",
+      commentData: initialCommentData(this.post_id),
       submitStatus: null
     };
   },
   validations: {
-    name: {
-      required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
-      minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
-    },
-    text: {
-      required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
-      minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
-    }
-  },
-  computed: {
-    datenow: function datenow() {
-      return new Date().getTime();
-    },
-    newComment: function newComment() {
-      return {
-        id: this.datenow,
-        post_id: this.post_id,
-        name: this.name,
-        text: this.text,
-        created_at: this.datenow,
-        updated_at: this.datenow
-      };
+    commentData: {
+      name: {
+        required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
+        minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
+      },
+      text: {
+        required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
+        minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
+      }
     }
   },
   methods: {
-    // addPost() {
-    //   Api.createComment(this.newComment).then(
-    //       ()=> this.$parent.$parent.$emit("newCommentCreated")
-    //   );  
-    // },
     submit: function submit() {
       var _this = this;
 
@@ -2229,13 +2230,14 @@ __webpack_require__.r(__webpack_exports__);
       if (this.$v.$invalid) {
         this.submitStatus = "ERROR";
       } else {
-        _api__WEBPACK_IMPORTED_MODULE_0__.Api.createComment(this.newComment).then(function () {
-          return _this.$parent.$parent.$emit("newCommentCreated");
-        });
         this.submitStatus = "PENDING";
-        setTimeout(function () {
-          _this.submitStatus = "OK";
-        }, 500);
+        _api__WEBPACK_IMPORTED_MODULE_0__.Api.createComment(this.commentData).then(function () {
+          _this.$parent.$parent.$emit("newCommentCreated"), _this.submitStatus = "OK";
+          _this.commentData = initialCommentData(_this.post_id);
+          setTimeout(function () {
+            _this.submitStatus = null;
+          }, 2000);
+        });
       }
     }
   }
@@ -2396,7 +2398,7 @@ __webpack_require__.r(__webpack_exports__);
       console.log(this.id), "id", _api__WEBPACK_IMPORTED_MODULE_0__.Api.deletePost(this.id);
       _api__WEBPACK_IMPORTED_MODULE_0__.Api.getPosts().then(function (response) {
         _this.$emit("posts", response);
-      }); // axios.post("/api/posts/delete", { id: this.id })
+      });
     }
   }
 });
@@ -2459,7 +2461,7 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       if (this.currentPage >= this.totalPages - 2) {
-        return [this.totalPages - 4, this.totalPages - 3, this.totalPages - 2, this.totalPages - 1, this.totalPages];
+        return [this.totalPages - 5, this.totalPages - 4, this.totalPages - 3, this.totalPages - 2, this.totalPages - 1];
       }
 
       return [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2];
@@ -2483,6 +2485,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _DeletePost_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DeletePost.vue */ "./resources/js/views/posts/DeletePost.vue");
 /* harmony import */ var _CreateComment_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CreateComment.vue */ "./resources/js/views/posts/CreateComment.vue");
 /* harmony import */ var _Paginator_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Paginator.vue */ "./resources/js/views/posts/Paginator.vue");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../constants */ "./resources/js/constants.js");
 //
 //
 //
@@ -2513,18 +2516,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 
 
 
 
 function formatDate(dateStr) {
   var date = new Date(dateStr);
-  return date.toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("ru-RU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
   });
 }
 
@@ -2541,7 +2545,8 @@ function formatDate(dateStr) {
   },
   data: function data() {
     return {
-      currentPage: 1
+      currentPage: 0,
+      commentsPerPage: _constants__WEBPACK_IMPORTED_MODULE_3__.COMMENTS_PER_PAGE
     };
   },
   computed: {
@@ -2552,10 +2557,7 @@ function formatDate(dateStr) {
       return formatDate(this.post.updated_at);
     },
     currentComments: function currentComments() {
-      if (this.post.comments.length) {
-        console.log(this.post.comments.length);
-        return this.post.comments.slice(-(this.currentPage + 2), this.currentPage > 1 ? -(this.currentPage - 1) : this.post.comments.length).reverse();
-      }
+      return this.post.comments.slice(-((this.currentPage + 1) * this.commentsPerPage), this.currentPage > 0 ? -((this.currentPage + 1) * this.commentsPerPage - this.commentsPerPage) : this.post.comments.length).reverse();
     }
   }
 });
@@ -2596,16 +2598,6 @@ __webpack_require__.r(__webpack_exports__);
       post: {}
     };
   },
-  computed: {
-    createdDate: function createdDate() {
-      var date = new Date(this.post.created_at);
-      return date.toLocaleDateString();
-    },
-    updatedDate: function updatedDate() {
-      var date = new Date(this.post.updated_at);
-      return date.toLocaleDateString();
-    }
-  },
   mounted: function mounted() {
     var _this = this;
 
@@ -2617,15 +2609,7 @@ __webpack_require__.r(__webpack_exports__);
         return _this.post = response;
       });
     });
-  } // axios
-  //   .post("/post", { id: this.$route.params.id })
-  //   .then((response) => response.data)
-  //   .then((response) => (this.post = response))
-  //   .catch(function (error) {
-  //     // handle error
-  //     console.log(error);
-  //   });
-
+  }
 });
 
 /***/ }),
@@ -2705,7 +2689,6 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     // Посты на текущей странице
     currentPosts: function currentPosts() {
-      console.log(this.getPostsPerPage(), 'getPostsPerPage');
       return this.getPostsPerPage();
     }
   },
@@ -2719,7 +2702,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     getPostsPerPage: function getPostsPerPage() {
       return this.posts.slice( // Последние POSTS_PER_PAGE поста из списка постов
-      -((this.currentPage + 1) * this.postsPerPage), this.currentPage > 0 ? -((this.currentPage + 1) * this.postsPerPage - 3) : this.posts.length) // Сортировка по дате создания - от более новых к более старым
+      -((this.currentPage + 1) * this.postsPerPage), this.currentPage > 0 ? -((this.currentPage + 1) * this.postsPerPage - this.postsPerPag) : this.posts.length) // Сортировка по дате создания - от более новых к более старым
       // (для упрощения используем reverse() и опираемся на то, что из БД посты получаем в порядке их создания)
       .reverse();
     }
@@ -38946,7 +38929,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _PostPage_vue_vue_type_template_id_389bbf6a_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./PostPage.vue?vue&type=template&id=389bbf6a&scoped=true& */ "./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&scoped=true&");
+/* harmony import */ var _PostPage_vue_vue_type_template_id_389bbf6a___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./PostPage.vue?vue&type=template&id=389bbf6a& */ "./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&");
 /* harmony import */ var _PostPage_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./PostPage.vue?vue&type=script&lang=js& */ "./resources/js/views/posts/PostPage.vue?vue&type=script&lang=js&");
 /* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
@@ -38958,11 +38941,11 @@ __webpack_require__.r(__webpack_exports__);
 ;
 var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
   _PostPage_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _PostPage_vue_vue_type_template_id_389bbf6a_scoped_true___WEBPACK_IMPORTED_MODULE_0__.render,
-  _PostPage_vue_vue_type_template_id_389bbf6a_scoped_true___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  _PostPage_vue_vue_type_template_id_389bbf6a___WEBPACK_IMPORTED_MODULE_0__.render,
+  _PostPage_vue_vue_type_template_id_389bbf6a___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
   false,
   null,
-  "389bbf6a",
+  null,
   null
   
 )
@@ -39289,19 +39272,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&scoped=true&":
-/*!******************************************************************************************!*\
-  !*** ./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&scoped=true& ***!
-  \******************************************************************************************/
+/***/ "./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&":
+/*!******************************************************************************!*\
+  !*** ./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a& ***!
+  \******************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PostPage_vue_vue_type_template_id_389bbf6a_scoped_true___WEBPACK_IMPORTED_MODULE_0__.render),
-/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PostPage_vue_vue_type_template_id_389bbf6a_scoped_true___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PostPage_vue_vue_type_template_id_389bbf6a___WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PostPage_vue_vue_type_template_id_389bbf6a___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
 /* harmony export */ });
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PostPage_vue_vue_type_template_id_389bbf6a_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./PostPage.vue?vue&type=template&id=389bbf6a&scoped=true& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&scoped=true&");
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_PostPage_vue_vue_type_template_id_389bbf6a___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./PostPage.vue?vue&type=template&id=389bbf6a& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&");
 
 
 /***/ }),
@@ -39443,10 +39426,11 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
+  return _c("div", { staticClass: "card" }, [
     _c(
       "form",
       {
+        staticClass: "card-body",
         on: {
           submit: function ($event) {
             $event.preventDefault()
@@ -39455,129 +39439,139 @@ var render = function () {
         },
       },
       [
-        _c(
-          "div",
-          {
-            staticClass: "form-group",
-            class: { "form-group--error": _vm.$v.name.$error },
-          },
-          [
-            _c("label", { staticClass: "form__label" }, [_vm._v("Name")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model.trim",
-                  value: _vm.$v.name.$model,
-                  expression: "$v.name.$model",
-                  modifiers: { trim: true },
-                },
-              ],
-              staticClass: "form__input",
-              domProps: { value: _vm.$v.name.$model },
-              on: {
-                input: function ($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.$v.name, "$model", $event.target.value.trim())
-                },
-                blur: function ($event) {
-                  return _vm.$forceUpdate()
-                },
+        _c("h2", { staticClass: "card-title" }, [
+          _vm._v("Добавить новый пост"),
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "form-group" }, [
+          _c("label", { staticClass: "form__label form-label" }, [
+            _vm._v("Имя"),
+          ]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model.trim",
+                value: _vm.$v.commentData.name.$model,
+                expression: "$v.commentData.name.$model",
+                modifiers: { trim: true },
               },
-            }),
-          ]
-        ),
-        _vm._v(" "),
-        !_vm.$v.name.required
-          ? _c("div", { staticClass: "error" }, [_vm._v("Name is required")])
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.$v.name.minLength
-          ? _c("div", { staticClass: "error" }, [
-              _vm._v(
-                "\n      Name must have at least " +
-                  _vm._s(_vm.$v.name.$params.minLength.min) +
-                  " letters.\n    "
-              ),
-            ])
-          : _vm._e(),
-        _vm._v(" "),
-        _c(
-          "div",
-          {
-            staticClass: "form-group",
-            class: { "form-group--error": _vm.$v.text.$error },
-          },
-          [
-            _c("label", { staticClass: "form__label" }, [_vm._v("text")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model.trim",
-                  value: _vm.$v.text.$model,
-                  expression: "$v.text.$model",
-                  modifiers: { trim: true },
-                },
-              ],
-              staticClass: "form__input",
-              domProps: { value: _vm.$v.text.$model },
-              on: {
-                input: function ($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.$v.text, "$model", $event.target.value.trim())
-                },
-                blur: function ($event) {
-                  return _vm.$forceUpdate()
-                },
+            ],
+            staticClass: "form__input form-control",
+            attrs: { name: "name" },
+            domProps: { value: _vm.$v.commentData.name.$model },
+            on: {
+              input: function ($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(
+                  _vm.$v.commentData.name,
+                  "$model",
+                  $event.target.value.trim()
+                )
               },
-            }),
-          ]
-        ),
+              blur: function ($event) {
+                return _vm.$forceUpdate()
+              },
+            },
+          }),
+          _vm._v(" "),
+          !_vm.$v.commentData.name.required
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v("\n        Поле обязательно для заполнения\n      "),
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.$v.commentData.name.minLength
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v(
+                  "\n        Имя должно содержать как минимум\n        " +
+                    _vm._s(_vm.$v.commentData.name.$params.minLength.min) +
+                    " символа\n      "
+                ),
+              ])
+            : _vm._e(),
+        ]),
         _vm._v(" "),
-        !_vm.$v.text.required
-          ? _c("div", { staticClass: "error" }, [_vm._v("text is required")])
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.$v.text.minLength
-          ? _c("div", { staticClass: "error" }, [
-              _vm._v(
-                "\n      text must have at least " +
-                  _vm._s(_vm.$v.text.$params.minLength.min) +
-                  " letters.\n    "
-              ),
-            ])
-          : _vm._e(),
+        _c("div", { staticClass: "form-group" }, [
+          _c("label", { staticClass: "form__label form-label" }, [
+            _vm._v("Комментарий"),
+          ]),
+          _vm._v(" "),
+          _c("textarea", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model.trim",
+                value: _vm.$v.commentData.text.$model,
+                expression: "$v.commentData.text.$model",
+                modifiers: { trim: true },
+              },
+            ],
+            staticClass: "form__input form-control",
+            attrs: { name: "text", rows: "5" },
+            domProps: { value: _vm.$v.commentData.text.$model },
+            on: {
+              input: function ($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(
+                  _vm.$v.commentData.text,
+                  "$model",
+                  $event.target.value.trim()
+                )
+              },
+              blur: function ($event) {
+                return _vm.$forceUpdate()
+              },
+            },
+          }),
+          _vm._v(" "),
+          !_vm.$v.commentData.text.required
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v("\n        Поле обязательно для заполнения\n      "),
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.$v.commentData.text.minLength
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v(
+                  "\n        Описание должно содержать как минимум\n        " +
+                    _vm._s(_vm.$v.commentData.text.$params.minLength.min) +
+                    " символов\n      "
+                ),
+              ])
+            : _vm._e(),
+        ]),
         _vm._v(" "),
         _c(
           "button",
           {
-            staticClass: "button",
+            staticClass: "btn btn-primary",
             attrs: { type: "submit", disabled: _vm.submitStatus === "PENDING" },
           },
-          [_vm._v("\n      Submit!\n    ")]
+          [_vm._v("\n      Опубликовать\n    ")]
         ),
         _vm._v(" "),
         _vm.submitStatus === "OK"
-          ? _c("p", { staticClass: "typo__p" }, [
-              _vm._v("\n      Thanks for your comment!\n    "),
+          ? _c("p", { staticClass: "alert alert-success mt-4" }, [
+              _vm._v("\n      Комментарий опубликован!\n    "),
             ])
           : _vm._e(),
         _vm._v(" "),
         _vm.submitStatus === "ERROR"
-          ? _c("p", { staticClass: "typo__p" }, [
-              _vm._v("\n      Please fill the form correctly.\n    "),
+          ? _c("p", { staticClass: "text-danger" }, [
+              _vm._v(
+                "\n      Проверьте правильность заполнения полей формы.\n    "
+              ),
             ])
           : _vm._e(),
         _vm._v(" "),
         _vm.submitStatus === "PENDING"
-          ? _c("p", { staticClass: "typo__p" }, [_vm._v("Sending...")])
+          ? _c("p", [_vm._v("Отправка...")])
           : _vm._e(),
       ]
     ),
@@ -39865,7 +39859,7 @@ var render = function () {
           on: {
             click: function ($event) {
               return _vm.setCurrentPage(
-                _vm.currentPage < _vm.totalPages
+                _vm.currentPage < _vm.totalPages - 1
                   ? _vm.currentPage + 1
                   : _vm.currentPage
               )
@@ -39881,7 +39875,7 @@ var render = function () {
           staticClass: "control",
           on: {
             click: function ($event) {
-              return _vm.setCurrentPage(_vm.totalPages)
+              return _vm.setCurrentPage(_vm.totalPages - 1)
             },
           },
         },
@@ -39924,9 +39918,7 @@ var render = function () {
       _vm._v(" "),
       _vm.showComments
         ? _c("div", [_vm._v(_vm._s(_vm.post.description))])
-        : _c("div", [
-            _vm._v(_vm._s(_vm.post.description.substring(1000)) + "..."),
-          ]),
+        : _c("div", [_vm._v(_vm._s(_vm.post.description.substring(0, 1000)))]),
       _vm._v(" "),
       _c("div", { staticClass: "mt-2" }, [
         _c("div", { staticClass: "text-muted" }, [
@@ -39959,24 +39951,20 @@ var render = function () {
               _vm._v(" "),
               _c("CreateComment", { attrs: { post_id: _vm.post.id } }),
               _vm._v(" "),
-              this.post.comments.length > 3
-                ? _c(
-                    "div",
-                    [
-                      _c("Paginator", {
-                        attrs: {
-                          currentPage: _vm.currentPage,
-                          totalPages: Math.ceil(_vm.post.comments.length / 3),
-                        },
-                        on: {
-                          setCurrentPage: function ($event) {
-                            _vm.currentPage = $event
-                          },
-                        },
-                      }),
-                    ],
-                    1
-                  )
+              this.post.comments.length > _vm.commentsPerPage
+                ? _c("Paginator", {
+                    attrs: {
+                      currentPage: _vm.currentPage,
+                      totalPages: Math.ceil(
+                        this.post.comments.length / _vm.commentsPerPage
+                      ),
+                    },
+                    on: {
+                      setCurrentPage: function ($event) {
+                        _vm.currentPage = $event
+                      },
+                    },
+                  })
                 : _vm._e(),
             ],
             2
@@ -39992,10 +39980,10 @@ render._withStripped = true
 
 /***/ }),
 
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&scoped=true&":
-/*!*********************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&scoped=true& ***!
-  \*********************************************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a&":
+/*!*********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/PostPage.vue?vue&type=template&id=389bbf6a& ***!
+  \*********************************************************************************************************************************************************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -40071,7 +40059,7 @@ var render = function () {
         ? _c("Paginator", {
             attrs: {
               currentPage: _vm.currentPage,
-              totalPages: Math.ceil(_vm.posts.length / _vm.postsPerPage) - 1,
+              totalPages: Math.ceil(_vm.posts.length / _vm.postsPerPage),
             },
             on: {
               setCurrentPage: function ($event) {

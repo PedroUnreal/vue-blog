@@ -20,7 +20,7 @@
       v-if="posts.length > postsPerPage"
       v-on:setCurrentPage="currentPage = $event"
       :currentPage="currentPage"
-      :totalPages="Math.ceil(posts.length / postsPerPage) - 1"
+      :totalPages="Math.ceil(posts.length / postsPerPage)"
     />
   </div>
 </template>
@@ -58,7 +58,6 @@ export default {
   computed: {
     // Посты на текущей странице
     currentPosts() {
-      console.log(this.getPostsPerPage(), 'getPostsPerPage');
       return  this.getPostsPerPage();
     },
   },
@@ -74,7 +73,7 @@ export default {
           .slice(
             // Последние POSTS_PER_PAGE поста из списка постов
             -((this.currentPage +1) * this.postsPerPage),
-            this.currentPage > 0 ? -(((this.currentPage +1) * this.postsPerPage)-3) : this.posts.length
+            this.currentPage > 0 ? -(((this.currentPage +1) * this.postsPerPage)-this.postsPerPag) : this.posts.length
           )
           // Сортировка по дате создания - от более новых к более старым
           // (для упрощения используем reverse() и опираемся на то, что из БД посты получаем в порядке их создания)

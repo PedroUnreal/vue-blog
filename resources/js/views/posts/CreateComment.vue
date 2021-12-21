@@ -1,108 +1,108 @@
 <template>
-  <div>
-    <!-- <form>
-    Name <input v-model="name" type="text" required /> 
-    Text <input v-model="text" type="text" required /> 
-    <button v-on:click="addPost" type="button">Добавить комментарий</button>
-    </form> -->
+  <div class="card">
+    <form @submit.prevent="submit" class="card-body">
+      <h2 class="card-title">Добавить новый пост</h2>
+      <div class="form-group">
+        <label class="form__label form-label">Имя</label>
+        <input
+          name="name"
+          class="form__input form-control"
+          v-model.trim="$v.commentData.name.$model"
+        />
 
-  <form @submit.prevent="submit">
-      <div class="form-group" :class="{ 'form-group--error': $v.name.$error }">
-        <label class="form__label">Name</label>
-        <input class="form__input" v-model.trim="$v.name.$model" />
+        <div class="text-danger" v-if="!$v.commentData.name.required">
+          Поле обязательно для заполнения
+        </div>
+        <div class="text-danger" v-if="!$v.commentData.name.minLength">
+          Имя должно содержать как минимум
+          {{ $v.commentData.name.$params.minLength.min }} символа
+        </div>
       </div>
-      <div class="error" v-if="!$v.name.required">Name is required</div>
-      <div class="error" v-if="!$v.name.minLength">
-        Name must have at least {{ $v.name.$params.minLength.min }} letters.
+
+      <div class="form-group">
+        <label class="form__label form-label">Комментарий</label>
+        <textarea
+          name="text"
+          class="form__input form-control"
+          rows="5"
+          v-model.trim="$v.commentData.text.$model"
+        />
+        <div class="text-danger" v-if="!$v.commentData.text.required">
+          Поле обязательно для заполнения
+        </div>
+        <div class="text-danger" v-if="!$v.commentData.text.minLength">
+          Описание должно содержать как минимум
+          {{ $v.commentData.text.$params.minLength.min }} символов
+        </div>
       </div>
-      <div class="form-group" :class="{ 'form-group--error': $v.text.$error }">
-        <label class="form__label">text</label>
-        <input class="form__input" v-model.trim="$v.text.$model" />
-      </div>
-      <div class="error" v-if="!$v.text.required">text is required</div>
-      <div class="error" v-if="!$v.text.minLength">
-        text must have at least {{ $v.text.$params.minLength.min }} letters.
-      </div>
+
       <button
-        class="button"
+        class="btn btn-primary"
         type="submit"
         :disabled="submitStatus === 'PENDING'"
       >
-        Submit!
+        Опубликовать
       </button>
-      <p class="typo__p" v-if="submitStatus === 'OK'">
-        Thanks for your comment!
+      <p v-if="submitStatus === 'OK'" class="alert alert-success mt-4">
+        Комментарий опубликован!
       </p>
-      <p class="typo__p" v-if="submitStatus === 'ERROR'">
-        Please fill the form correctly.
+      <p class="text-danger" v-if="submitStatus === 'ERROR'">
+        Проверьте правильность заполнения полей формы.
       </p>
-      <p class="typo__p" v-if="submitStatus === 'PENDING'">Sending...</p>
+      <p v-if="submitStatus === 'PENDING'">Отправка...</p>
     </form>
-
-
   </div>
 </template>
 
 <script>
 import { Api } from "../../api";
 import { required, minLength } from "vuelidate/lib/validators";
+
+const initialCommentData = (postId) => ({
+  name: "",
+  text: "",
+  post_id: postId
+});
+
 export default {
   name: "CreateComment",
-  props:{post_id: Number},
+  props: { post_id: Number },
+
   data() {
     return {
-      name: "",
-      text: "",
+      commentData: initialCommentData(this.post_id),
       submitStatus: null,
     };
   },
-
   validations: {
-    name: {
-      required,
-      minLength: minLength(4),
-    },
-    text: {
-      required,
-      minLength: minLength(4),
-    },
-  },
-
-  computed: {
-    datenow() {
-      return new Date().getTime();
-    },
-    newComment() {
-      return {
-        id: this.datenow,
-        post_id: this.post_id,
-        name: this.name,
-        text: this.text,
-        created_at: this.datenow,
-        updated_at: this.datenow,
-      };
+    commentData: {
+      name: {
+        required,
+        minLength: minLength(4),
+      },
+      text: {
+        required,
+        minLength: minLength(4),
+      },
     },
   },
 
   methods: {
-    // addPost() {
-    //   Api.createComment(this.newComment).then(
-    //       ()=> this.$parent.$parent.$emit("newCommentCreated")
-    //   );  
-    // },
-
     submit() {
       this.$v.$touch();
       if (this.$v.$invalid) {
         this.submitStatus = "ERROR";
       } else {
-        Api.createComment(this.newComment).then(
-          ()=> this.$parent.$parent.$emit("newCommentCreated")
-      );  
         this.submitStatus = "PENDING";
-        setTimeout(() => {
-          this.submitStatus = "OK";
-        }, 500);
+        Api.createComment(this.commentData).then(() => {
+          this.$parent.$parent.$emit("newCommentCreated"),
+            (this.submitStatus = "OK");
+
+          this.commentData = initialCommentData(this.post_id);
+          setTimeout(() => {
+            this.submitStatus = null;
+          }, 2000);
+        });
       }
     },
   },
