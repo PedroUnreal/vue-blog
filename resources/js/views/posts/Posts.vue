@@ -5,7 +5,7 @@
 
     <div class="mt-4 card" v-for="post in currentPosts" :key="post.id">
       <div class="card-body">
-        <Post :post="post" :showComments="false" />
+        <Post :post="post" :listMode="false" />
         <router-link
           tag="button"
           class="btn btn-primary"

@@ -1,7 +1,7 @@
 <template>
-  <div class="card">
+  <div class="card mt-4">
     <form @submit.prevent="submit" class="card-body">
-      <h2 class="card-title">Добавить новый пост</h2>
+      <h4 class="card-title">Добавить новый комментарий</h4>
       <div class="form-group">
         <label class="form__label form-label">Имя</label>
         <input
@@ -58,10 +58,9 @@
 import { Api } from "../../api";
 import { required, minLength } from "vuelidate/lib/validators";
 
-const initialCommentData = (postId) => ({
+const initialCommentData = () => ({
   name: "",
   text: "",
-  post_id: postId
 });
 
 export default {
@@ -70,7 +69,7 @@ export default {
 
   data() {
     return {
-      commentData: initialCommentData(this.post_id),
+      commentData: initialCommentData(),
       submitStatus: null,
     };
   },
@@ -94,11 +93,15 @@ export default {
         this.submitStatus = "ERROR";
       } else {
         this.submitStatus = "PENDING";
-        Api.createComment(this.commentData).then(() => {
-          this.$parent.$parent.$emit("newCommentCreated"),
+        
+        Api.createComment({
+            ...this.commentData,
+            post_id: this.post_id
+          }).then(() => {
+          this.$parent.$emit("newCommentCreated"),
             (this.submitStatus = "OK");
 
-          this.commentData = initialCommentData(this.post_id);
+          this.commentData = initialCommentData();
           setTimeout(() => {
             this.submitStatus = null;
           }, 2000);

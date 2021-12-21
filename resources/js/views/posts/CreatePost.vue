@@ -62,7 +62,6 @@ const initialPostData = () => ({
 
 export default {
   name: "CreatePost",
-
   data() {
     return {
       postData: initialPostData(),

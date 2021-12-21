@@ -27,7 +27,10 @@ export const Api = {
             .catch(unwrapError)
     },
     createPost: (newPost) => {
-        return axios.post(endpoints.createPost,  newPost )
+        return axios.post(endpoints.createPost, newPost )
+    },
+    updatePost: (post) => {
+        return axios.post(endpoints.updatePost, post )
     },
     
     deletePost: (id) => {
