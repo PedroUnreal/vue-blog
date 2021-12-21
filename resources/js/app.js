@@ -11,11 +11,13 @@ window.Vue = require('vue').default;
 import VueRouter from 'vue-router';
 import App from "./views/App";
 import routers from './router';
+import Vuelidate from 'vuelidate';
+
 
 
 Vue.use(VueRouter);
 
-
+Vue.use(Vuelidate);
 
 /**
  * The following block of code may be used to automatically register your

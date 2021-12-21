@@ -6,11 +6,18 @@
       <div>Cоздан: {{ createdDate }} Обновлен: {{ updatedDate }}</div>
       <div><DeletePost :id="post.id" /></div>
       <div v-if="this.showComments">
-      <h3>Комментарии</h3>
-      <div v-for="comment in this.post.comments" :key="comment.id" >
-          {{comment.name}}: "{{comment.text}}"
-      </div>
-      <CreateComment :post_id="post.id"/>
+        <h3>Комментарии</h3>
+        <div v-for="comment in currentComments" :key="comment.id">
+          {{ comment.name }}: "{{ comment.text }}"
+        </div>
+        <CreateComment :post_id="post.id" />
+        <div v-if="this.post.comments.length>3">
+          <Paginator
+            v-on:setCurrentPage="currentPage = $event"
+            :currentPage="currentPage"
+            :totalPages="Math.ceil(post.comments.length / 3)"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -18,11 +25,17 @@
 
 <script>
 import DeletePost from "./DeletePost.vue";
-import CreateComment from "./CreateComment.vue"
+import CreateComment from "./CreateComment.vue";
+import Paginator from "./Paginator.vue";
 export default {
   name: "Post",
-  props: {post: Object, showComments: Boolean, comments: Array},
-  components: { DeletePost, CreateComment },
+  props: { post: Object, showComments: Boolean },
+  components: { DeletePost, CreateComment, Paginator },
+  data() {
+    return {
+      currentPage: 1,
+    };
+  },
   computed: {
     createdDate() {
       const date = new Date(this.post.created_at);
@@ -31,6 +44,19 @@ export default {
     updatedDate() {
       const date = new Date(this.post.updated_at);
       return date.toLocaleDateString();
+    },
+    currentComments() {
+       if (this.post.comments.length){
+         console.log(this.post.comments.length);
+        return this.post.comments
+        .slice(
+          -(this.currentPage + 2),
+          this.currentPage > 1
+            ? -(this.currentPage - 1)
+            : this.post.comments.length
+        )
+        .reverse();
+        }
     },
   },
 };
