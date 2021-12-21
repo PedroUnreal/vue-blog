@@ -2295,40 +2295,48 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
+
+
+var initialPostData = function initialPostData() {
+  return {
+    title: '',
+    description: ''
+  };
+};
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "CreatePost",
   data: function data() {
     return {
-      title: "",
-      description: "",
+      postData: initialPostData(),
       submitStatus: null
     };
   },
   validations: {
-    title: {
-      required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
-      minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
-    },
-    description: {
-      required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
-      minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
-    }
-  },
-  computed: {
-    datenow: function datenow() {
-      return new Date().getTime();
-    },
-    newPost: function newPost() {
-      return {
-        id: this.datenow,
-        title: this.title,
-        description: this.description,
-        created_at: this.datenow,
-        updated_at: this.datenow,
-        comments: []
-      };
+    postData: {
+      title: {
+        required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
+        minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(4)
+      },
+      description: {
+        required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.required,
+        minLength: (0,vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__.minLength)(10)
+      }
     }
   },
   methods: {
@@ -2340,13 +2348,16 @@ __webpack_require__.r(__webpack_exports__);
       if (this.$v.$invalid) {
         this.submitStatus = "ERROR";
       } else {
-        _api__WEBPACK_IMPORTED_MODULE_0__.Api.createPost(this.newPost).then(function () {
-          _this.$parent.$emit("newPostCreated");
-        });
         this.submitStatus = "PENDING";
-        setTimeout(function () {
+        _api__WEBPACK_IMPORTED_MODULE_0__.Api.createPost(this.postData).then(function () {
+          _this.$parent.$emit("newPostCreated");
+
           _this.submitStatus = "OK";
-        }, 500);
+          _this.postData = initialPostData();
+          setTimeout(function () {
+            _this.submitStatus = null;
+          }, 2000);
+        });
       }
     }
   }
@@ -2418,7 +2429,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Paginator",
   props: {
@@ -2441,11 +2451,11 @@ __webpack_require__.r(__webpack_exports__);
       if (this.currentPage <= 3) {
         if (this.totalPages < 5) {
           return Array(this.totalPages).fill(null).map(function (item, index) {
-            return item = index + 1;
+            return item = index;
           });
         }
 
-        return [1, 2, 3, 4, 5];
+        return [0, 1, 2, 3, 4];
       }
 
       if (this.currentPage >= this.totalPages - 2) {
@@ -2498,8 +2508,25 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
 
 
+
+
+function formatDate(dateStr) {
+  var date = new Date(dateStr);
+  return date.toLocaleDateString('ru-RU', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Post",
@@ -2519,12 +2546,10 @@ __webpack_require__.r(__webpack_exports__);
   },
   computed: {
     createdDate: function createdDate() {
-      var date = new Date(this.post.created_at);
-      return date.toLocaleDateString();
+      return formatDate(this.post.created_at);
     },
     updatedDate: function updatedDate() {
-      var date = new Date(this.post.updated_at);
-      return date.toLocaleDateString();
+      return formatDate(this.post.updated_at);
     },
     currentComments: function currentComments() {
       if (this.post.comments.length) {
@@ -2620,6 +2645,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Post_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Post.vue */ "./resources/js/views/posts/Post.vue");
 /* harmony import */ var _CreatePost_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./CreatePost.vue */ "./resources/js/views/posts/CreatePost.vue");
 /* harmony import */ var _Paginator_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Paginator.vue */ "./resources/js/views/posts/Paginator.vue");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../constants */ "./resources/js/constants.js");
 //
 //
 //
@@ -2636,6 +2662,18 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 
 
 
@@ -2650,20 +2688,25 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       posts: [],
-      currentPage: 1
+      currentPage: 0,
+      postsPerPage: _constants__WEBPACK_IMPORTED_MODULE_4__.POSTS_PER_PAGE
     };
   },
   mounted: function mounted() {
     var _this = this;
 
-    this.getPosts();
-    this.$on('newPostCreated', function () {
+    // Получение постов при открытии страницы
+    this.getPosts(); // Обновление списка постов при создании нового поста
+
+    this.$on("newPostCreated", function () {
       _this.getPosts();
     });
   },
   computed: {
+    // Посты на текущей странице
     currentPosts: function currentPosts() {
-      return this.posts.slice(-(this.currentPage + 2), this.currentPage > 1 ? -(this.currentPage - 1) : this.posts.length).reverse();
+      console.log(this.getPostsPerPage(), 'getPostsPerPage');
+      return this.getPostsPerPage();
     }
   },
   methods: {
@@ -2673,6 +2716,12 @@ __webpack_require__.r(__webpack_exports__);
       _api__WEBPACK_IMPORTED_MODULE_0__.Api.getPosts().then(function (response) {
         _this2.posts = response;
       });
+    },
+    getPostsPerPage: function getPostsPerPage() {
+      return this.posts.slice( // Последние POSTS_PER_PAGE поста из списка постов
+      -((this.currentPage + 1) * this.postsPerPage), this.currentPage > 0 ? -((this.currentPage + 1) * this.postsPerPage - 3) : this.posts.length) // Сортировка по дате создания - от более новых к более старым
+      // (для упрощения используем reverse() и опираемся на то, что из БД посты получаем в порядке их создания)
+      .reverse();
     }
   }
 });
@@ -2834,6 +2883,23 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     forceTLS: true
 // });
+
+/***/ }),
+
+/***/ "./resources/js/constants.js":
+/*!***********************************!*\
+  !*** ./resources/js/constants.js ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "POSTS_PER_PAGE": () => (/* binding */ POSTS_PER_PAGE),
+/* harmony export */   "COMMENTS_PER_PAGE": () => (/* binding */ COMMENTS_PER_PAGE)
+/* harmony export */ });
+var POSTS_PER_PAGE = 3;
+var COMMENTS_PER_PAGE = 5;
 
 /***/ }),
 
@@ -7260,7 +7326,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.pagination {\n  height: 48px;\n  width: 100%;\n  border-bottom: 1px solid #c8cacc;\n  display: flex;\n  align-items: center;\n  margin-left: 8px;\n}\n.control {\n  width: 24px;\n  height: 24px;\n  margin-right: 8px;\n}\n.control:hover {\n  cursor: pointer;\n}\n.control.active {\n  color: cornflowerblue;\n  background: ivory;\n  border: 1px solid #c8cacc;\n  border-radius: 6px;\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.pagination {\n  height: 48px;\n  width: 100%;\n  border-bottom: 1px solid #c8cacc;\n  display: flex;\n  align-items: center;\n  margin-left: 8px;\n\n  -webkit-user-select: none;\n\n     -moz-user-select: none;\n\n      -ms-user-select: none;\n\n          user-select: none;\n}\n.control {\n  width: 24px;\n  height: 24px;\n  margin-right: 8px;\n  text-align: center;\n  border: 1px solid transparent;\n}\n.control:hover {\n  cursor: pointer;\n}\n.activePage {\n  color: cornflowerblue;\n  background: ivory;\n  border: 1px solid #c8cacc;\n  border-radius: 6px;\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -38722,7 +38788,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _CreatePost_vue_vue_type_template_id_37ea3c97_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true& */ "./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true&");
+/* harmony import */ var _CreatePost_vue_vue_type_template_id_37ea3c97___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CreatePost.vue?vue&type=template&id=37ea3c97& */ "./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&");
 /* harmony import */ var _CreatePost_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CreatePost.vue?vue&type=script&lang=js& */ "./resources/js/views/posts/CreatePost.vue?vue&type=script&lang=js&");
 /* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
@@ -38734,11 +38800,11 @@ __webpack_require__.r(__webpack_exports__);
 ;
 var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
   _CreatePost_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _CreatePost_vue_vue_type_template_id_37ea3c97_scoped_true___WEBPACK_IMPORTED_MODULE_0__.render,
-  _CreatePost_vue_vue_type_template_id_37ea3c97_scoped_true___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  _CreatePost_vue_vue_type_template_id_37ea3c97___WEBPACK_IMPORTED_MODULE_0__.render,
+  _CreatePost_vue_vue_type_template_id_37ea3c97___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
   false,
   null,
-  "37ea3c97",
+  null,
   null
   
 )
@@ -39155,19 +39221,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true&":
-/*!********************************************************************************************!*\
-  !*** ./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true& ***!
-  \********************************************************************************************/
+/***/ "./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&":
+/*!********************************************************************************!*\
+  !*** ./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97& ***!
+  \********************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreatePost_vue_vue_type_template_id_37ea3c97_scoped_true___WEBPACK_IMPORTED_MODULE_0__.render),
-/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreatePost_vue_vue_type_template_id_37ea3c97_scoped_true___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreatePost_vue_vue_type_template_id_37ea3c97___WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   "staticRenderFns": () => (/* reexport safe */ _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreatePost_vue_vue_type_template_id_37ea3c97___WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
 /* harmony export */ });
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreatePost_vue_vue_type_template_id_37ea3c97_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true&");
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_CreatePost_vue_vue_type_template_id_37ea3c97___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./CreatePost.vue?vue&type=template&id=37ea3c97& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&");
 
 
 /***/ }),
@@ -39524,10 +39590,10 @@ render._withStripped = true
 
 /***/ }),
 
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true&":
-/*!***********************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&scoped=true& ***!
-  \***********************************************************************************************************************************************************************************************************************************/
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97&":
+/*!***********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/views/posts/CreatePost.vue?vue&type=template&id=37ea3c97& ***!
+  \***********************************************************************************************************************************************************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -39540,10 +39606,11 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
+  return _c("div", { staticClass: "card" }, [
     _c(
       "form",
       {
+        staticClass: "card-body",
         on: {
           submit: function ($event) {
             $event.preventDefault()
@@ -39552,137 +39619,139 @@ var render = function () {
         },
       },
       [
-        _c(
-          "div",
-          {
-            staticClass: "form-group",
-            class: { "form-group--error": _vm.$v.title.$error },
-          },
-          [
-            _c("label", { staticClass: "form__label" }, [_vm._v("Title")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model.trim",
-                  value: _vm.$v.title.$model,
-                  expression: "$v.title.$model",
-                  modifiers: { trim: true },
-                },
-              ],
-              staticClass: "form__input",
-              domProps: { value: _vm.$v.title.$model },
-              on: {
-                input: function ($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.$v.title, "$model", $event.target.value.trim())
-                },
-                blur: function ($event) {
-                  return _vm.$forceUpdate()
-                },
+        _c("h2", { staticClass: "card-title" }, [
+          _vm._v("Добавить новый пост"),
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "form-group" }, [
+          _c("label", { staticClass: "form__label form-label" }, [
+            _vm._v("Заголовок"),
+          ]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model.trim",
+                value: _vm.$v.postData.title.$model,
+                expression: "$v.postData.title.$model",
+                modifiers: { trim: true },
               },
-            }),
-          ]
-        ),
-        _vm._v(" "),
-        !_vm.$v.title.required
-          ? _c("div", { staticClass: "error" }, [_vm._v("Title is required")])
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.$v.title.minLength
-          ? _c("div", { staticClass: "error" }, [
-              _vm._v(
-                "\n      Title must have at least " +
-                  _vm._s(_vm.$v.title.$params.minLength.min) +
-                  " letters.\n    "
-              ),
-            ])
-          : _vm._e(),
-        _vm._v(" "),
-        _c(
-          "div",
-          {
-            staticClass: "form-group",
-            class: { "form-group--error": _vm.$v.description.$error },
-          },
-          [
-            _c("label", { staticClass: "form__label" }, [
-              _vm._v("Description"),
-            ]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model.trim",
-                  value: _vm.$v.description.$model,
-                  expression: "$v.description.$model",
-                  modifiers: { trim: true },
-                },
-              ],
-              staticClass: "form__input",
-              domProps: { value: _vm.$v.description.$model },
-              on: {
-                input: function ($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(
-                    _vm.$v.description,
-                    "$model",
-                    $event.target.value.trim()
-                  )
-                },
-                blur: function ($event) {
-                  return _vm.$forceUpdate()
-                },
+            ],
+            staticClass: "form__input form-control",
+            attrs: { name: "title" },
+            domProps: { value: _vm.$v.postData.title.$model },
+            on: {
+              input: function ($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(
+                  _vm.$v.postData.title,
+                  "$model",
+                  $event.target.value.trim()
+                )
               },
-            }),
-          ]
-        ),
+              blur: function ($event) {
+                return _vm.$forceUpdate()
+              },
+            },
+          }),
+          _vm._v(" "),
+          !_vm.$v.postData.title.required
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v("Поле обязательно для заполнения"),
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.$v.postData.title.minLength
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v(
+                  "\n       Заголовок должен содержать как минимум " +
+                    _vm._s(_vm.$v.postData.title.$params.minLength.min) +
+                    " символа\n      "
+                ),
+              ])
+            : _vm._e(),
+        ]),
         _vm._v(" "),
-        !_vm.$v.description.required
-          ? _c("div", { staticClass: "error" }, [
-              _vm._v("description is required"),
-            ])
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.$v.description.minLength
-          ? _c("div", { staticClass: "error" }, [
-              _vm._v(
-                "\n      Description must have at least " +
-                  _vm._s(_vm.$v.description.$params.minLength.min) +
-                  " letters.\n    "
-              ),
-            ])
-          : _vm._e(),
+        _c("div", { staticClass: "form-group" }, [
+          _c("label", { staticClass: "form__label form-label" }, [
+            _vm._v("Описание"),
+          ]),
+          _vm._v(" "),
+          _c("textarea", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model.trim",
+                value: _vm.$v.postData.description.$model,
+                expression: "$v.postData.description.$model",
+                modifiers: { trim: true },
+              },
+            ],
+            staticClass: "form__input form-control",
+            attrs: { name: "description", rows: "5" },
+            domProps: { value: _vm.$v.postData.description.$model },
+            on: {
+              input: function ($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.$set(
+                  _vm.$v.postData.description,
+                  "$model",
+                  $event.target.value.trim()
+                )
+              },
+              blur: function ($event) {
+                return _vm.$forceUpdate()
+              },
+            },
+          }),
+          _vm._v(" "),
+          !_vm.$v.postData.description.required
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v("\n        Поле обязательно для заполнения\n      "),
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.$v.postData.description.minLength
+            ? _c("div", { staticClass: "text-danger" }, [
+                _vm._v(
+                  "\n        Описание должно содержать как минимум \n        " +
+                    _vm._s(_vm.$v.postData.description.$params.minLength.min) +
+                    " символов\n      "
+                ),
+              ])
+            : _vm._e(),
+        ]),
         _vm._v(" "),
         _c(
           "button",
           {
-            staticClass: "button",
+            staticClass: "btn btn-primary",
             attrs: { type: "submit", disabled: _vm.submitStatus === "PENDING" },
           },
-          [_vm._v("\n      Submit!\n    ")]
+          [_vm._v("\n      Опубликовать\n    ")]
         ),
         _vm._v(" "),
         _vm.submitStatus === "OK"
-          ? _c("p", { staticClass: "typo__p" }, [
-              _vm._v("\n      Thanks for your post!\n    "),
+          ? _c("p", { staticClass: "alert alert-success mt-4" }, [
+              _vm._v("Пост опубликован!"),
             ])
           : _vm._e(),
         _vm._v(" "),
         _vm.submitStatus === "ERROR"
-          ? _c("p", { staticClass: "typo__p" }, [
-              _vm._v("\n      Please fill the form correctly.\n    "),
+          ? _c("p", { staticClass: "text-danger" }, [
+              _vm._v(
+                "\n      Проверьте правильность заполнения полей формы.\n    "
+              ),
             ])
           : _vm._e(),
         _vm._v(" "),
         _vm.submitStatus === "PENDING"
-          ? _c("p", { staticClass: "typo__p" }, [_vm._v("Sending...")])
+          ? _c("p", [_vm._v("Отправка...")])
           : _vm._e(),
       ]
     ),
@@ -39750,11 +39819,11 @@ var render = function () {
           staticClass: "control",
           on: {
             click: function ($event) {
-              return _vm.setCurrentPage(1)
+              return _vm.setCurrentPage(0)
             },
           },
         },
-        [_vm._v(" " + _vm._s(">>") + " ")]
+        [_vm._v(_vm._s("<<"))]
       ),
       _vm._v(" "),
       _c(
@@ -39764,28 +39833,29 @@ var render = function () {
           on: {
             click: function ($event) {
               return _vm.setCurrentPage(
-                _vm.currentPage > 1 ? _vm.currentPage - 1 : _vm.currentPage
+                _vm.currentPage > 0 ? _vm.currentPage - 1 : 0
               )
             },
           },
         },
-        [_vm._v("   " + _vm._s(">") + " ")]
+        [_vm._v(" " + _vm._s("<") + " ")]
       ),
       _vm._v(" "),
-      _vm._l(_vm.shownPagesNumbers, function (number, index) {
-        return _c("span", { key: index }, [
-          _c(
-            "span",
-            {
-              on: {
-                click: function ($event) {
-                  return _vm.setCurrentPage(number)
-                },
+      _vm._l(_vm.shownPagesNumbers, function (number) {
+        return _c(
+          "span",
+          {
+            key: number,
+            staticClass: "control",
+            class: { activePage: number === _vm.currentPage },
+            on: {
+              click: function ($event) {
+                return _vm.setCurrentPage(number)
               },
             },
-            [_vm._v("\n        " + _vm._s(number) + "  \n    ")]
-          ),
-        ])
+          },
+          [_vm._v("\n    " + _vm._s(number + 1) + "\n  ")]
+        )
       }),
       _vm._v(" "),
       _c(
@@ -39802,7 +39872,7 @@ var render = function () {
             },
           },
         },
-        [_vm._v("   >   ")]
+        [_vm._v(" > ")]
       ),
       _vm._v(" "),
       _c(
@@ -39844,41 +39914,45 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
-    _c("div", { staticClass: "alert alert-info" }, [
-      _c("p", { staticClass: "lead" }, [
-        _vm._v(
-          "Номер поста " + _vm._s(_vm.post.id) + " " + _vm._s(_vm.post.title)
-        ),
+  return _c(
+    "div",
+    { staticClass: "container rounded bg-light mb-3 pt-2 pb-2" },
+    [
+      _c("h2", { class: { lead: !_vm.showComments } }, [
+        _vm._v(_vm._s(_vm.post.title)),
       ]),
       _vm._v(" "),
-      _c("div", [_vm._v(_vm._s(_vm.post.description))]),
+      _vm.showComments
+        ? _c("div", [_vm._v(_vm._s(_vm.post.description))])
+        : _c("div", [
+            _vm._v(_vm._s(_vm.post.description.substring(1000)) + "..."),
+          ]),
       _vm._v(" "),
-      _c("div", [
-        _vm._v(
-          "Cоздан: " +
-            _vm._s(_vm.createdDate) +
-            " Обновлен: " +
-            _vm._s(_vm.updatedDate)
-        ),
+      _c("div", { staticClass: "mt-2" }, [
+        _c("div", { staticClass: "text-muted" }, [
+          _vm._v("Cоздан: " + _vm._s(_vm.createdDate)),
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "text-muted" }, [
+          _vm._v("Обновлен: " + _vm._s(_vm.updatedDate)),
+        ]),
       ]),
-      _vm._v(" "),
-      _c("div", [_c("DeletePost", { attrs: { id: _vm.post.id } })], 1),
       _vm._v(" "),
       this.showComments
         ? _c(
             "div",
+            { staticClass: "mt-4" },
             [
               _c("h3", [_vm._v("Комментарии")]),
               _vm._v(" "),
               _vm._l(_vm.currentComments, function (comment) {
                 return _c("div", { key: comment.id }, [
                   _vm._v(
-                    "\n        " +
+                    "\n      " +
                       _vm._s(comment.name) +
                       ': "' +
                       _vm._s(comment.text) +
-                      '"\n      '
+                      '"\n    '
                   ),
                 ])
               }),
@@ -39908,8 +39982,8 @@ var render = function () {
             2
           )
         : _vm._e(),
-    ]),
-  ])
+    ]
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -39966,41 +40040,38 @@ var render = function () {
   return _c(
     "div",
     [
-      _c(
-        "div",
-        { staticClass: "alert alert-info" },
-        [
-          _c("p", { staticClass: "lead" }, [
-            _vm._v("Вот тут мы хотим увидеть список всех постов!"),
-          ]),
-          _vm._v(" "),
-          _c("CreatePost"),
-          _vm._v(" "),
-          _vm._l(_vm.currentPosts, function (post) {
-            return _c(
-              "div",
-              { key: post.id },
-              [
-                _c("Post", { attrs: { post: post, showComments: false } }),
-                _vm._v(" "),
-                _c(
-                  "router-link",
-                  { attrs: { to: { name: "Post", params: { id: post.id } } } },
-                  [_vm._v("\n        Читать комментарии\n      ")]
-                ),
-              ],
-              1
-            )
-          }),
-        ],
-        2
-      ),
+      _c("CreatePost"),
       _vm._v(" "),
-      _vm.posts.length > 3
+      _vm._l(_vm.currentPosts, function (post) {
+        return _c("div", { key: post.id, staticClass: "mt-4 card" }, [
+          _c(
+            "div",
+            { staticClass: "card-body" },
+            [
+              _c("Post", { attrs: { post: post, showComments: false } }),
+              _vm._v(" "),
+              _c(
+                "router-link",
+                {
+                  staticClass: "btn btn-primary",
+                  attrs: {
+                    tag: "button",
+                    to: { name: "Post", params: { id: post.id } },
+                  },
+                },
+                [_vm._v("\n        Перейти к посту\n      ")]
+              ),
+            ],
+            1
+          ),
+        ])
+      }),
+      _vm._v(" "),
+      _vm.posts.length > _vm.postsPerPage
         ? _c("Paginator", {
             attrs: {
               currentPage: _vm.currentPage,
-              totalPages: Math.ceil(_vm.posts.length / 3),
+              totalPages: Math.ceil(_vm.posts.length / _vm.postsPerPage) - 1,
             },
             on: {
               setCurrentPage: function ($event) {
@@ -40010,7 +40081,7 @@ var render = function () {
           })
         : _vm._e(),
     ],
-    1
+    2
   )
 }
 var staticRenderFns = []

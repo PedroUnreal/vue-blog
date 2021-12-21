@@ -1,39 +1,53 @@
 <template>
-  <div>
-    <form @submit.prevent="submit">
-      <div class="form-group" :class="{ 'form-group--error': $v.title.$error }">
-        <label class="form__label">Title</label>
-        <input class="form__input" v-model.trim="$v.title.$model" />
+  <div class="card">
+    <form @submit.prevent="submit" class="card-body">
+      <h2 class="card-title">Добавить новый пост</h2>
+      <div class="form-group">
+        <label class="form__label form-label">Заголовок</label>
+        <input
+          name="title"
+          class="form__input form-control"
+          v-model.trim="$v.postData.title.$model"
+        />
+
+        <div class="text-danger" v-if="!$v.postData.title.required">Поле обязательно для заполнения</div>
+        <div class="text-danger" v-if="!$v.postData.title.minLength">
+         Заголовок должен содержать как минимум {{ $v.postData.title.$params.minLength.min }} символа
+        </div>
       </div>
-      <div class="error" v-if="!$v.title.required">Title is required</div>
-      <div class="error" v-if="!$v.title.minLength">
-        Title must have at least {{ $v.title.$params.minLength.min }} letters.
+
+      <div
+        class="form-group"
+      >
+        <label class="form__label form-label">Описание</label>
+        <textarea
+          name="description"
+          class="form__input form-control"
+          rows="5"
+          v-model.trim="$v.postData.description.$model"
+        />
+        <div class="text-danger" v-if="!$v.postData.description.required">
+          Поле обязательно для заполнения
+        </div>
+        <div class="text-danger" v-if="!$v.postData.description.minLength">
+          Описание должно содержать как минимум 
+          {{ $v.postData.description.$params.minLength.min }} символов
+        </div>
       </div>
-      <div class="form-group" :class="{ 'form-group--error': $v.description.$error }">
-        <label class="form__label">Description</label>
-        <input class="form__input" v-model.trim="$v.description.$model" />
-      </div>
-      <div class="error" v-if="!$v.description.required">description is required</div>
-      <div class="error" v-if="!$v.description.minLength">
-        Description must have at least {{ $v.description.$params.minLength.min }} letters.
-      </div>
+
       <button
-        class="button"
+        class="btn btn-primary"
         type="submit"
         :disabled="submitStatus === 'PENDING'"
       >
-        Submit!
+        Опубликовать
       </button>
-      <p class="typo__p" v-if="submitStatus === 'OK'">
-        Thanks for your post!
+      <p v-if="submitStatus === 'OK'" class="alert alert-success mt-4">Пост опубликован!</p>
+      <p class="text-danger" v-if="submitStatus === 'ERROR'">
+        Проверьте правильность заполнения полей формы.
       </p>
-      <p class="typo__p" v-if="submitStatus === 'ERROR'">
-        Please fill the form correctly.
-      </p>
-      <p class="typo__p" v-if="submitStatus === 'PENDING'">Sending...</p>
+      <p v-if="submitStatus === 'PENDING'">Отправка...</p>
     </form>
-
-
   </div>
 </template>
 
@@ -41,61 +55,53 @@
 import { Api } from "../../api";
 import { required, minLength } from "vuelidate/lib/validators";
 
+const initialPostData = () => ({
+  title:'',
+  description: '',
+});
+
 export default {
   name: "CreatePost",
 
   data() {
     return {
-      title: "",
-      description: "",
+      postData: initialPostData(),
       submitStatus: null,
     };
   },
   validations: {
-    title: {
-      required,
-      minLength: minLength(4),
-    },
-    description: {
-      required,
-      minLength: minLength(4),
-    },
-  },
-
-  computed: {
-    datenow() {
-      return new Date().getTime();
-    },
-    newPost() {
-      return {
-        id: this.datenow,
-        title: this.title,
-        description: this.description,
-        created_at: this.datenow,
-        updated_at: this.datenow,
-        comments: [],
-      };
-    },
+    postData: {
+      title: {
+        required,
+        minLength: minLength(4),
+      },
+      description: {
+        required,
+        minLength: minLength(10),
+      },
+    }
   },
 
   methods: {
     submit() {
       this.$v.$touch();
+
       if (this.$v.$invalid) {
         this.submitStatus = "ERROR";
       } else {
-        Api.createPost(this.newPost).then(() => {
-        this.$parent.$emit("newPostCreated");
-      });
         this.submitStatus = "PENDING";
-        setTimeout(() => {
+
+        Api.createPost(this.postData).then(() => {
+          this.$parent.$emit("newPostCreated");
           this.submitStatus = "OK";
-        }, 500);
+
+          this.postData = initialPostData();
+          setTimeout(() => {
+            this.submitStatus = null;
+          }, 2000);
+        });
       }
     },
   },
 };
 </script>
-
-<style scoped>
-</style>
