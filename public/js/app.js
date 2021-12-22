@@ -2644,7 +2644,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 
 
 
@@ -2690,7 +2689,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     getPostsPerPage: function getPostsPerPage() {
       return this.posts.slice( // Последние POSTS_PER_PAGE поста из списка постов
-      -((this.currentPage + 1) * this.postsPerPage), this.currentPage > 0 ? -((this.currentPage + 1) * this.postsPerPage - this.postsPerPag) : this.posts.length) // Сортировка по дате создания - от более новых к более старым
+      -((this.currentPage + 1) * this.postsPerPage), this.currentPage > 0 ? -((this.currentPage + 1) * this.postsPerPage - this.postsPerPage) : this.posts.length) // Сортировка по дате создания - от более новых к более старым
       // (для упрощения используем reverse() и опираемся на то, что из БД посты получаем в порядке их создания)
       .reverse();
     }

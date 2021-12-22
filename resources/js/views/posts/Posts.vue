@@ -2,7 +2,6 @@
   <div>
     <!-- <p class="lead">Вот тут мы хотим увидеть список всех постов!</p> -->
     <CreatePost />
-
     <div class="mt-4 card" v-for="post in currentPosts" :key="post.id">
       <div class="card-body">
         <Post :post="post" :listMode="false" />
@@ -72,8 +71,8 @@ export default {
         this.posts
           .slice(
             // Последние POSTS_PER_PAGE поста из списка постов
-            -((this.currentPage +1) * this.postsPerPage),
-            this.currentPage > 0 ? -(((this.currentPage +1) * this.postsPerPage)-this.postsPerPag) : this.posts.length
+            -((this.currentPage + 1) * this.postsPerPage),
+            this.currentPage > 0 ? -(((this.currentPage + 1) * this.postsPerPage) - this.postsPerPage) : this.posts.length
           )
           // Сортировка по дате создания - от более новых к более старым
           // (для упрощения используем reverse() и опираемся на то, что из БД посты получаем в порядке их создания)
